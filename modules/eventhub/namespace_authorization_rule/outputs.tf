@@ -32,6 +32,6 @@ output "name" {
 }
 
 output "resource_group" {
-  value       = var.resource_group
+  value       = var.resource_group_name
   description = "Name of the resource group"
 }

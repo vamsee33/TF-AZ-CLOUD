@@ -16,8 +16,3 @@ variable "delegation" {
   description = "The optional delegation block for the subnet."
   default     = null
 }
-
-output "subnet_ids_map" {
-  description = "The output of the subnet oject and all values."
-  value       = azurerm_subnet.subnet
-}

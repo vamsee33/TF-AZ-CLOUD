@@ -1,8 +1,6 @@
-variable "settings" {}
-variable "resource_group" {}
+variable "namespace_object" {}
+variable "resource_group_name" {}
 variable "location" {}
-variable "app_id" {}
-variable "environment" {}
 variable "tags" {
   default = {}
 }
@@ -18,4 +16,5 @@ variable "network_rulesets" {
     }))
 
   }))
+  default = [{}]
 }
