@@ -74,7 +74,7 @@ module "nsg_association" {
 }
 
 module "nsg_association" {
-  for_each       = try(local.rt_associations)
+  for_each       = try(local.rt_associations, {})
   source         = "../modules/network/route_subnet_association"
   subnet_id      = module.subnets.ids[each.value.subnet_key]
   route_table_id = module.route_table[each.value.rt_key].id
