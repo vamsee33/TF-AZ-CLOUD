@@ -41,8 +41,8 @@ module "route_table" {
   source              = "../modules/network/route_table"
   route_table         = each.value
   resource_group_name = data.azurerm_resource_group.app1.name
-  location            = local.location
-  tags                = local.tags
+  location            = "EASTUS2"
+  tags                = var.tags
 }
 module "nsg_association" {
   for_each                  = try(local.nsg_associations, {})

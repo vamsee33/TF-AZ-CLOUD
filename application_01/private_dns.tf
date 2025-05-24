@@ -4,7 +4,7 @@ module "private_dns_zone" {
   source              = "../modules/network/private_dns_zone"
   name                = each.value.name
   resource_group_name = data.azurerm_resource_group.app1.name
-  tags                = local.tags
+  tags                = var.tags
 }
 ## Azure DNS vNET Link
 module "dns_vnet_link" {
@@ -20,6 +20,8 @@ module "dns_vnet_link" {
 # Private DNS locals
 locals {
   private_dns_zones = {
-    name = "#Name#"
+    blob = {
+      name = "#Name#"
+    }
   }
 }
