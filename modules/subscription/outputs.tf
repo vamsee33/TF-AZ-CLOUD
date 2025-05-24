@@ -4,6 +4,6 @@ output "id" {
 output "name" {
   value = azurerm_subscription.sub.subscription_name
 }
-output "subscription object" {
+output "subscription_object" {
   value = azurerm_subscription.sub
 }
