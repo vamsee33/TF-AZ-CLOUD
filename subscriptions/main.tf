@@ -3,9 +3,9 @@ module "subscriptions" {
   for_each           = local.mco_subscriptions
   name               = each.value.name
   subscription_alias = each.value.name
-  billing_scope_id   = data.azurerm_billing_mca_account_scope.mca.id # Hardcode a value if needed
-  workload           = each.value.workload                           #(`Production` or `DevTest`)
-  tags               = each.value.tags                               # a map of tags
+  billing_scope_id   = data.azurerm_billing_enrollment_account_scope.example.id # Hardcode a value if needed
+  workload           = each.value.workload                                      #(`Production` or `DevTest`)
+  tags               = each.value.tags                                          # a map of tags
 }
 
 resource "time_sleep" "wait_for_120s" {
