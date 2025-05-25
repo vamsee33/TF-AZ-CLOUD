@@ -2,6 +2,7 @@ variable "consumer_group_object" {}
 
 variable "resource_group_name" {
   description = "Resource group name."
+  type        = string
 }
 
 variable "namespace_name" {
