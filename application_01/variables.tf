@@ -1,8 +1,4 @@
 // General/Global variables
-variable "tags" {
-  default = {}
-}
-
 variable "location" {
   description = "Azure region for all resources."
   type        = string
@@ -13,6 +9,12 @@ variable "resource_group_name" {
   description = "Name of the resource group for the application."
   type        = string
   default     = "app1-rg"
+}
+
+variable "tags" {
+  description = "A map of tags to assign to the resource."
+  type        = map(string)
+  default     = {}
 }
 
 // Virtual Network
@@ -318,9 +320,137 @@ variable "vnet_peering_config" {
     "peer1" = {
       remote_virtual_network_id    = "${module.virtual_network_2.id}"
       allow_virtual_network_access = true
-      allow_forwarded_traffic     = false
-      allow_gateway_transit       = false
-      use_remote_gateways         = false
+      allow_forwarded_traffic      = false
+      allow_gateway_transit        = false
+      use_remote_gateways          = false
     }
+  }
+}
+
+// Key Vault
+variable "key_vault_name" {
+  description = "The name of the Key Vault."
+  type        = string
+  default     = "app1-keyvault"
+}
+
+variable "key_vault_sku_name" {
+  description = "The SKU name of the Key Vault."
+  type        = string
+  default     = "standard"
+}
+
+variable "key_vault_soft_delete_enabled" {
+  description = "Is soft delete enabled for this Key Vault?"
+  type        = bool
+  default     = true
+}
+
+variable "key_vault_purge_protection_enabled" {
+  description = "Is purge protection enabled for this Key Vault?"
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_access_policies" {
+  description = "A list of access policies for the Key Vault."
+  type        = list(any)
+  default     = []
+}
+
+variable "key_vault_network_acls" {
+  description = "Network ACLs for the Key Vault."
+  type        = any
+  default = {
+    bypass                     = "AzureServices"
+    default_action             = "Allow"
+    ip_rules                   = []
+    virtual_network_subnet_ids = []
+  }
+}
+
+variable "key_vault_soft_delete_retention_days" {
+  description = "The number of days that items should be retained for once soft-deleted. Must be between 7 and 90."
+  type        = number
+  default     = 90
+}
+
+variable "key_vault_enable_rbac_authorization" {
+  description = "Whether RBAC authorization is enabled for this Key Vault."
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_enabled_for_deployment" {
+  description = "Whether Azure Virtual Machines are permitted to retrieve certificates stored as secrets from the Key Vault."
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_enabled_for_disk_encryption" {
+  description = "Whether Azure Disk Encryption is permitted to retrieve secrets from the vault and unwrap keys."
+  type        = bool
+  default     = false
+}
+
+variable "key_vault_enabled_for_template_deployment" {
+  description = "Whether Azure Resource Manager is permitted to retrieve secrets from the Key Vault."
+  type        = bool
+  default     = false
+}
+// Storage Account
+variable "storage_account_name" {
+  description = "The name of the storage account."
+  type        = string
+}
+
+
+
+variable "storage_config" {
+  description = "Configuration object for storage account properties."
+  type        = any
+  default = {
+    account_tier                     = "Standard"
+    account_replication_type         = "LRS"
+    kind                             = "StorageV2"
+    access_tier                      = "Hot"
+    public_network_access_enabled    = true
+    min_tls_version                  = "TLS1_2"
+    shared_access_key_enabled        = true
+    is_hns_enabled                   = false
+    allow_nested_items_to_be_public  = false
+    cross_tenant_replication_enabled = false
+    https_traffic_only_enabled       = true
+  }
+}
+// private endpoint
+variable "private_endpoint_name" {
+  description = "The name of the private endpoint."
+  type        = string
+  default     = "example-pe"
+}
+
+variable "subnet_id" {
+  description = "The subnet ID for the private endpoint."
+  type        = string
+  default     = "<subnet-id>"
+}
+
+variable "private_service_connection" {
+  description = "The private service connection block."
+  default = {
+    name                           = null
+    private_connection_resource_id = null
+    is_manual_connection           = false
+    subresource_names              = null
+    request_message                = null
+  }
+}
+
+variable "private_dns_zone_group" {
+  description = "The private DNS zone group block."
+  default = {
+    name                 = null
+    private_dns_zone_ids = null
   }
 }
