@@ -56,12 +56,25 @@ variable "subnets" {
 
 // Network Security Groups (NSG)
 variable "nsg_s" {
-  description = "Map of NSG definitions per subnet."
-  type        = map(any)
+  description = "Map of NSG definitions per subnet. Each value must have nsg_name and a list of security_rules."
+  type = map(object({
+    nsg_name = string
+    security_rules = list(object({
+      name                       = string
+      priority                   = number
+      direction                  = string
+      access                     = string
+      protocol                   = string
+      source_port_range          = string
+      destination_port_range     = string
+      source_address_prefix      = string
+      destination_address_prefix = string
+    }))
+  }))
   default = {
     subnet1 = {
       nsg_name = "nsg-subnet1"
-      nsg = [
+      security_rules = [
         {
           name                       = "Allow-HTTP"
           priority                   = 100
@@ -77,7 +90,7 @@ variable "nsg_s" {
     }
     subnet2 = {
       nsg_name = "nsg-subnet2"
-      nsg = [
+      security_rules = [
         {
           name                       = "Allow-HTTPS"
           priority                   = 110
@@ -110,6 +123,12 @@ variable "route_table" {
       next_hop_type  = "VnetLocal"
     }
   ]
+}
+
+variable "route_table_name" {
+  description = "Name of the route table."
+  type        = string
+  default     = "app1-rt"
 }
 
 // Private DNS Zones for Private Link services
@@ -257,30 +276,51 @@ variable "log_analytics_workspace_name" {
 variable "log_analytics_workspace_settings" {
   description = "Settings for the Log Analytics Workspace except name."
   type = object({
-    sku                               = optional(string)
-    identity                          = optional(object({
+    sku = optional(string)
+    identity = optional(object({
       type         = string
       identity_ids = optional(list(string))
     }))
-    retention_in_days                 = optional(number)
-    daily_quota_gb                    = optional(string)
-    allow_resource_only_permissions   = optional(bool)
-    local_authentication_disabled     = optional(bool)
-    internet_ingestion_enabled        = optional(bool)
-    internet_query_enabled            = optional(bool)
-    cmk_for_query_forced              = optional(bool)
+    retention_in_days               = optional(number)
+    daily_quota_gb                  = optional(string)
+    allow_resource_only_permissions = optional(bool)
+    local_authentication_disabled   = optional(bool)
+    internet_ingestion_enabled      = optional(bool)
+    internet_query_enabled          = optional(bool)
+    cmk_for_query_forced            = optional(bool)
   })
   default = {
-    sku                               = "PerGB2018"
+    sku = "PerGB2018"
     identity = {
       type = "SystemAssigned"
     }
-    retention_in_days                 = 90
-    daily_quota_gb                    = "1GB"
-    allow_resource_only_permissions   = false
-    local_authentication_disabled     = false
-    internet_ingestion_enabled        = true
-    internet_query_enabled            = true
-    cmk_for_query_forced              = false
+    retention_in_days               = 90
+    daily_quota_gb                  = "1GB"
+    allow_resource_only_permissions = false
+    local_authentication_disabled   = false
+    internet_ingestion_enabled      = true
+    internet_query_enabled          = true
+    cmk_for_query_forced            = false
+  }
+}
+
+// vNet Peering
+variable "vnet_peering_config" {
+  description = "Map of vNet peering configurations. Keyed by peering name."
+  type = map(object({
+    remote_virtual_network_id    = string
+    allow_virtual_network_access = optional(bool, true)
+    allow_forwarded_traffic      = optional(bool, false)
+    allow_gateway_transit        = optional(bool, false)
+    use_remote_gateways          = optional(bool, false)
+  }))
+  default = {
+    "peer1" = {
+      remote_virtual_network_id    = "${module.virtual_network_2.id}"
+      allow_virtual_network_access = true
+      allow_forwarded_traffic     = false
+      allow_gateway_transit       = false
+      use_remote_gateways         = false
+    }
   }
 }

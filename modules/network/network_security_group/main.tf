@@ -7,7 +7,7 @@ resource "azurerm_network_security_group" "nsg_obj" {
   tags                = var.tags
 
   dynamic "security_rule" {
-    for_each = lookup(each.value, "nsg", [])
+    for_each = lookup(each.value, "security_rules", [])
 
     content {
       name                                       = lookup(security_rule.value, "name", null)

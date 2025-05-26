@@ -14,3 +14,6 @@ variable "resource_group_name" {
 variable "location" {
   description = "Location where to create the resource"
 }
+variable "route_table_name" {
+  description = "Name of the Route Table"
+}
