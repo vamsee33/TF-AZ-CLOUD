@@ -1,0 +1,100 @@
+name: Terraform Plan
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: 'Terraform configuration directory'
+        required: false
+        default: './terraform'
+        type: string
+      tf_variables:
+        required: false 
+        type: string 
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: string
+      application:
+        description: 'Application name'
+        required: true
+        type: string
+      AZURE_TENANT_ID:
+        description: 'Azure Tenant ID'
+        required: true
+        type: string
+      auto-apply:
+        description: 'Whether to automatically apply Terraform changes'
+        required: false
+        default: 'false'
+        type: string  # passed as string, will be compared in step  
+
+    secrets:
+      GH_TOKEN:
+        description: 'GitHub token'
+        required: true
+      client-id:
+        description: 'Azure Client ID'
+        required: true
+      subscription-id:
+        description: 'Azure Subscription ID'
+        required: true
+      AZURE_TENANT_ID:
+        description: 'Azure Tenant ID'
+        required: true
+      
+
+jobs:
+  terraform-plan:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+
+    env:
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      AZURE_CLIENT_ID: ${{ secrets.client-id }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.subscription-id }}
+      var_file: ${{ inputs.tf_variables }}
+
+    steps:
+      
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GH_TOKEN }}
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.client-id }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.subscription-id }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      - name: Terraform Init
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform validate
+
+      - name: Terraform Plan
+        working-directory: test/terraform
+        run: terraform plan ${{inputs.tf_variables}} -input=false -out=tfplan-${{ inputs.environment }}-${{ inputs.application }}.out
+        # run: terraform plan -var github_repository_name="${{ inputs.tf_variables }}" -input=false -out=tfplan-${{ inputs.environment }}-${{ inputs.application }}.out
+      
+     
+
+      - name: Terraform Apply (auto-apply enabled)
+        if: ${{ inputs.auto-apply == 'true' }}
+        working-directory: ${{ inputs.working-directory }}
+        run: terraform apply -input=false -auto-approve tfplan-${{ inputs.environment }}-${{ inputs.application }}.out  

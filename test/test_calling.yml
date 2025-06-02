@@ -1,0 +1,66 @@
+name: Terraform Plan Caller
+
+on:
+  workflow_dispatch:
+    inputs:
+      application:
+        description: 'Select the application to deploy'
+        required: true
+        type: choice
+        default: resource-group
+        options:
+          - resource-group
+          - billing-service
+          - user-portal
+          - analytics-engine
+
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        default: production
+        options:
+          - dev
+          - staging
+          - production
+
+      deployment:
+        description: 'Deployment component'
+        required: true
+        type: choice
+        default: rg
+        options:
+          - rg
+          - api
+          - db
+          - redis
+
+      auto-apply:
+        description: 'Automatically apply Terraform changes?'
+        required: true
+        default: 'false'
+        type: choice
+        options:
+          - 'true'
+          - 'false'
+
+permissions:
+  contents: read
+  id-token: write  
+
+jobs:
+  plan:
+    uses: ./.github/workflows/composite-actions.yml
+    with:
+      environment: ${{ inputs.environment }}
+      application: ${{ inputs.application }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      working-directory: test/terraform
+      auto-apply: ${{ inputs.auto-apply }}
+      tf_variables: -var="github_repository_name=${{ github.repository }}" -var="deployment=${{ inputs.deployment }}"
+      
+    secrets:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      client-id: ${{ secrets.AZURE_CLIENT_ID }}
+      subscription-id: ${{ secrets.SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
