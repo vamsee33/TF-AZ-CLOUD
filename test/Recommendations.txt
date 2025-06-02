@@ -1,0 +1,85 @@
+## Terraform Deployment Best Practices
+
+When setting up Terraform deployments for Azure, it’s important to follow best practices that improve security, scalability, and team collaboration. Below are some key recommendations that help streamline your setup and make deployments safer and more manageable.
+
+---
+
+### 1. Use a Separate Service Principal (SPN) for Each Application
+
+Instead of using one SPN across multiple projects, create a unique SPN for each application (e.g., `coretet`, `subscription-tending`, etc.).
+
+**Why this matters:**
+
+* It provides clear access boundaries—each SPN only gets access to the resources it needs.
+* Helps enforce least privilege security principles.
+* Makes it easier to manage roles and permissions over time, especially when troubleshooting or auditing.
+
+By having individual SPNs per deployment scope (resource group or subscription), you reduce risk and gain better control.
+
+---
+
+### 2. Use OIDC Login Instead of Client Secrets
+
+Traditionally, Terraform connects to Azure using a client ID and client secret. We’ve improved this by switching to OIDC (OpenID Connect) with federated credentials, especially when using GitHub Actions.
+
+**Benefits of OIDC login:**
+
+* No need to store long-lived secrets in your code or CI/CD pipelines.
+* Authentication is handled securely through short-lived tokens issued by GitHub.
+* It’s fully automated and safer than managing secrets manually.
+
+This is a modern and recommended approach for cloud authentication and fits perfectly in CI/CD environments like GitHub Actions.
+
+---
+
+### 3. Automate Federated Credential Setup with Terraform
+
+To support OIDC login, each SPN needs a federated credential that links it to GitHub. Instead of setting this up manually in Azure, automate it using Terraform during SPN creation.
+
+**Why automate it:**
+
+* Manual steps are easy to forget or do incorrectly.
+* Automation ensures each new SPN is ready to go for OIDC-based deployments.
+* It improves consistency across teams and environments.
+
+With Terraform, you can create the SPN and set up its federated identity in one simple step.
+
+---
+
+## Bonus Recommendations for Smarter Deployment
+
+Here are a few more practical tips based on everything above:
+
+---
+
+### Keep GitHub Permissions Tight and Clear
+
+In your GitHub workflows, always define permissions clearly:
+
+```yaml
+permissions:
+  id-token: write
+  contents: read
+```
+
+This ensures the GitHub runner has just enough access to generate OIDC tokens without overexposing your project.
+
+---
+
+### Tag and Version Your Modules
+
+Use Git tags when working with shared Terraform modules. This helps other teams or projects use specific versions, and makes rollback easy if something goes wrong.
+
+Example:
+
+```hcl
+source = "git::https://github.com/your-org/modules.git//network?ref=v1.2.0"
+```
+
+---
+
+### Use Reusable Workflows in GitHub Actions
+
+If you find yourself repeating the same Terraform steps (`init`, `plan`, `apply`) in different repos, create a composite GitHub Action. This keeps your workflows simple and consistent across teams.
+
+---
